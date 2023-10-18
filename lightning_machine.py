@@ -4,7 +4,7 @@ from torch import optim
 
 
 class LightningMachine(LightningModule):
-    def __init__(self, model):
+    def __init__(self, model=None):
         super().__init__()
         self.model = model
         self.criterion = torch.nn.MSELoss(reduction='mean')

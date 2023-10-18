@@ -7,8 +7,9 @@ from soil_dataset import SoilDataset
 
 
 class ANN:
-    def __init__(self, model, train_x, train_y, test_x, test_y, validation_x, validation_y):
-        self.model = LightningMachine(model)
+    def __init__(self, algorithm, train_x, train_y, test_x, test_y, validation_x, validation_y):
+        self.algorithm = algorithm
+        self.model = LightningMachine(model=self.algorithm)
 
         self.train_dataset = SoilDataset(train_x, train_y)
         self.test_dataset = SoilDataset(test_x, test_y)
@@ -32,9 +33,11 @@ class ANN:
         self.trainer = pl.Trainer(limit_train_batches=100000, max_epochs=3, callbacks=[self.mc_callback, self.es_callback])
 
     def train(self):
+        #return
         self.trainer.fit(model=self.model, train_dataloaders=self.train_loader, val_dataloaders=self.valid_loader)
 
     def test(self):
         best_checkpoint_path = self.mc_callback.best_model_path
-        best_model = LightningMachine.load_from_checkpoint(best_checkpoint_path)
-        self.trainer.test(model=best_model, dataloaders=self.test_loader)
+        #best_checkpoint_path = "checkpoints/best_model-v10.ckpt"
+        best_model = LightningMachine.load_from_checkpoint(best_checkpoint_path, model=self.algorithm)
+        return self.trainer.test(model=best_model, dataloaders=self.test_loader)

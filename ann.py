@@ -3,19 +3,20 @@ from torch.utils.data import DataLoader
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning_machine import LightningMachine
+from soil_dataset import SoilDataset
 
 
 class ANN:
-    def __init__(self, model, train_dataset, test_dataset, validation_dataset):
+    def __init__(self, model, train_x, train_y, test_x, test_y, validation_x, validation_y):
         self.model = LightningMachine(model)
 
-        self.train_dataset = train_dataset
-        self.test_dataset = test_dataset
-        self.validation_dataset = validation_dataset
+        self.train_dataset = SoilDataset(train_x, train_y)
+        self.test_dataset = SoilDataset(test_x, test_y)
+        self.validation_dataset = SoilDataset(validation_x, validation_y)
 
-        self.train_loader = DataLoader(train_dataset)
-        self.test_loader = DataLoader(test_dataset)
-        self.valid_loader = DataLoader(validation_dataset)
+        self.train_loader = DataLoader(self.train_dataset)
+        self.test_loader = DataLoader(self.test_dataset)
+        self.valid_loader = DataLoader(self.validation_dataset)
 
         self.es_callback = EarlyStopping(monitor="val_loss", mode="min")
 
@@ -28,12 +29,12 @@ class ANN:
             verbose=True
         )
 
-        self.trainer = pl.Trainer(limit_train_batches=100000, max_epochs=3000, callbacks=[self.mc_callback, self.es_callback])
+        self.trainer = pl.Trainer(limit_train_batches=100000, max_epochs=3, callbacks=[self.mc_callback, self.es_callback])
 
     def train(self):
         self.trainer.fit(model=self.model, train_dataloaders=self.train_loader, val_dataloaders=self.valid_loader)
 
     def test(self):
         best_checkpoint_path = self.mc_callback.best_model_path
-        best_model = self.model.load_from_checkpoint(best_checkpoint_path)
+        best_model = LightningMachine.load_from_checkpoint(best_checkpoint_path)
         self.trainer.test(model=best_model, dataloaders=self.test_loader)

@@ -21,11 +21,10 @@ class AlgorithmRunner:
         if algorithm.startswith("ann_"):
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             if algorithm == "ann_conv":
-                device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-                model_instance = ANNConv(device, train_x, train_y, test_x, test_y, validation_x, validation_y)
-                model_instance.train_model()
-                y_hats = model_instance.test()
-
+                model_instance = ANNConv(device)
+                ann = ANN(model_instance, train_x, train_y, test_x, test_y, validation_x, validation_y)
+                ann.train()
+                y_hats = ann.test()
         else:
             model_instance = None
             if algorithm == "mlr":

@@ -33,11 +33,13 @@ class ANN:
         self.trainer = pl.Trainer(limit_train_batches=100000, max_epochs=3, callbacks=[self.mc_callback, self.es_callback])
 
     def train(self):
-        #return
         self.trainer.fit(model=self.model, train_dataloaders=self.train_loader, val_dataloaders=self.valid_loader)
 
     def test(self):
         best_checkpoint_path = self.mc_callback.best_model_path
-        #best_checkpoint_path = "checkpoints/best_model-v10.ckpt"
         best_model = LightningMachine.load_from_checkpoint(best_checkpoint_path, model=self.algorithm)
-        return self.trainer.test(model=best_model, dataloaders=self.test_loader)
+        self.trainer.test(model=best_model, dataloaders=self.test_loader)
+        algorithm = best_model.model
+        algorithm.eval()
+        y_pred = algorithm(self.test_dataset.allx)
+        return y_pred.detach().numpy()

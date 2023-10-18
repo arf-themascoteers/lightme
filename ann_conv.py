@@ -15,7 +15,15 @@ class ANNConv(nn.Module):
             nn.Linear(36, 1),
         )
 
+        self.linear2 = nn.Sequential(
+            nn.Linear(108, 1)
+        )
+
     def forward(self, x):
+        x = x.reshape(x.shape[0],-1)
+        x = self.linear2(x)
+        return x
+
         x = self.conv1(x)
         x = self.relu1(x)
         x = x.reshape(x.shape[0],1,-1)
